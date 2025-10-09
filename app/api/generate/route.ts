@@ -62,19 +62,22 @@ export async function POST(request: NextRequest) {
     const inputImageUrl = inputUrlData.publicUrl
     console.log('URL input:', inputImageUrl)
 
-    // 3. Appeler Replicate avec le modèle nano-banana
-    console.log('Appel à Replicate avec le modèle: google/nano-banana')
+    // 3. Appeler Replicate avec InstructPix2Pix pour l'édition d'image basée sur instructions
+    console.log('Appel à Replicate avec le modèle: timothybrooks/instruct-pix2pix')
     console.log('Token Replicate présent:', !!process.env.REPLICATE_API_TOKEN)
     
     let output: any
     
     try {
       output = await replicate.run(
-        "google/nano-banana" as any,
+        "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f" as any,
         {
           input: {
             image: inputImageUrl,
             prompt: prompt,
+            num_inference_steps: 20,
+            image_guidance_scale: 1.5,
+            guidance_scale: 7.5
           }
         }
       )

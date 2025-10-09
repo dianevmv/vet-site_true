@@ -1,13 +1,13 @@
 # 🎨 Éditeur d'Images IA
 
-Application Next.js pour transformer des images avec l'intelligence artificielle en utilisant **Hugging Face (GRATUIT)** et Supabase.
+Application Next.js pour transformer des images avec l'intelligence artificielle en utilisant **Replicate** et Supabase.
 
 ## 🚀 Technologies utilisées
 
 - **Next.js 14** avec TypeScript
 - **Supabase** pour le stockage d'images et la base de données
-- **Hugging Face** pour la génération d'images avec IA (GRATUIT 🆓)
-- **Stable Diffusion 2.1** comme modèle IA
+- **Replicate** pour la transformation d'images avec IA
+- **InstructPix2Pix** - Modèle IA pour éditer des images selon des instructions textuelles
 
 ## 📋 Prérequis
 
@@ -15,7 +15,7 @@ Application Next.js pour transformer des images avec l'intelligence artificielle
 - Un compte Supabase avec :
   - Deux buckets de stockage : `input-images` et `output-images`
   - Une table `projects` configurée
-- Un compte Hugging Face **GRATUIT** avec un Access Token (voir HUGGINGFACE_SETUP.md)
+- Un compte Replicate avec un API Token (voir https://replicate.com)
 
 ## 🔧 Configuration Supabase
 
@@ -59,25 +59,22 @@ CREATE POLICY "Enable read for all users" ON projects
 npm install
 ```
 
-2. **Obtenir votre token Hugging Face GRATUIT**
+2. **Obtenir votre token Replicate**
 
-👉 **Suivez le guide détaillé dans `HUGGINGFACE_SETUP.md`**
-
-En résumé :
-- Allez sur https://huggingface.co/settings/tokens
-- Créez un token gratuit
+- Allez sur https://replicate.com/account/api-tokens
+- Créez un API token
 - Ajoutez-le dans `.env.local`
 
 3. **Configurer le fichier `.env.local`**
 
-Le fichier contient déjà :
+Créez un fichier `.env.local` à la racine avec :
 - URL et clés Supabase
-- Placeholder pour token Hugging Face (à remplacer)
+- Token Replicate API
 - Noms des buckets de stockage
 
 ## 🎯 Utilisation
 
-⚠️ **Avant de lancer, assurez-vous d'avoir configuré votre token Hugging Face dans `.env.local`**
+⚠️ **Avant de lancer, assurez-vous d'avoir configuré votre token Replicate dans `.env.local`**
 
 1. **Démarrer le serveur de développement :**
 
@@ -103,26 +100,26 @@ Allez sur [http://localhost:3000](http://localhost:3000)
 ├── app/
 │   ├── api/
 │   │   └── generate/
-│   │       └── route.ts          # API pour générer les images
+│   │       └── route.ts          # API pour transformer les images avec InstructPix2Pix
 │   ├── layout.tsx                # Layout principal
 │   └── page.tsx                  # Page d'accueil avec formulaire
 ├── lib/
-│   ├── supabase.ts               # Configuration Supabase
-│   └── huggingface.ts            # Configuration Hugging Face
+│   └── supabase.ts               # Configuration Supabase
 ├── .env.local                    # Variables d'environnement
 └── package.json                  # Dépendances
 ```
 
 ## 🔄 Flux de l'application
 
-1. L'utilisateur upload une image et entre un prompt
+1. L'utilisateur upload une image et entre un prompt de transformation
 2. L'image est uploadée dans le bucket `input-images` de Supabase
 3. L'URL publique de l'image est récupérée
-4. L'API Hugging Face est appelée avec le prompt (génération text-to-image)
-5. L'image générée est téléchargée et uploadée dans `output-images`
-6. Les informations sont sauvegardées dans la table `projects`
-7. L'URL de l'image générée est retournée au frontend
-8. L'utilisateur peut visualiser et télécharger l'image
+4. L'API Replicate est appelée avec l'image ET le prompt (modèle InstructPix2Pix)
+5. Le modèle transforme l'image selon les instructions du prompt
+6. L'image transformée est téléchargée et uploadée dans `output-images`
+7. Les informations sont sauvegardées dans la table `projects`
+8. L'URL de l'image transformée est retournée au frontend
+9. L'utilisateur peut visualiser et télécharger l'image
 
 ## 🎨 Fonctionnalités
 
@@ -144,11 +141,12 @@ Allez sur [http://localhost:3000](http://localhost:3000)
 
 ## 📝 Notes
 
-- Le modèle `Stable Diffusion 2.1` est utilisé (GRATUIT)
+- Le modèle `InstructPix2Pix` est utilisé pour transformer les images selon des instructions
 - Les images sont stockées dans Supabase Storage
-- La génération peut prendre 10-30 secondes (tier gratuit)
+- La génération peut prendre 10-30 secondes selon la charge du serveur
 - Assurez-vous que vos buckets Supabase sont publics pour que les URLs fonctionnent
 - Prompts en anglais recommandés pour de meilleurs résultats
+- Le modèle conserve la structure de l'image originale tout en appliquant les transformations demandées
 
 ## 🆘 Dépannage
 
@@ -156,10 +154,10 @@ Allez sur [http://localhost:3000](http://localhost:3000)
 - Vérifiez que les buckets existent et sont publics dans Supabase
 - Vérifiez que les noms des buckets correspondent dans `.env.local`
 
-**Erreur Hugging Face :**
-- Vérifiez que votre token Hugging Face est valide dans `.env.local`
-- Si "Model is loading", attendez 1-2 minutes et réessayez
-- Si "Rate limit", attendez quelques secondes entre les générations
+**Erreur Replicate :**
+- Vérifiez que votre token Replicate est valide dans `.env.local`
+- Si erreur 402 "Insufficient credit", rechargez votre compte sur https://replicate.com/account/billing
+- Si le modèle prend du temps, c'est normal (10-30 secondes)
 
 **Erreur base de données :**
 - Vérifiez que la table `projects` existe
